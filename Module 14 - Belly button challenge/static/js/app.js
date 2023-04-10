@@ -1,20 +1,90 @@
+const url = 'https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json'
 
-// Read in Samples.json using D3 library from the below URL
-const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
-d3.json(url).then(function(data){console.log(data);});
+//Plots
+function charts(id) {
+    d3.json(url).then(function (data) {
+        let sampleData = data;
+        let samples = sampleData.samples;
+        let identifier = samples.filter(sample => sample.id === id);
+        let filtered = identifier[0];
+        let OTUvalues = filtered.sample_values.slice(0, 10).reverse();
+        let OTUids = filtered.otu_ids.slice(0, 10).reverse();
+        let labels = filtered.otu_labels.slice(0, 10).reverse();
+        let bubbleTrace = {
+            x: filtered.otu_ids,
+            y: filtered.sample_values,
+            mode: 'markers',
+            marker: {
+                size: filtered.sample_values,
+                color: filtered.otu_ids,
+                colorscale: "#A2165F"
+            },
+            text: filtered.otu_labels,
+        };
+        let bubbleData = [bubbleTrace];
+        let bubbleLayout = {
+            title: `OTUs for Subject ${id}`,
+            xaxis: { title: 'OTU ID' },
+            yaxis: { title: 'Sample Values' }
+        };
+        Plotly.newPlot('bubble', bubbleData, bubbleLayout);
+        
+        
+        let barTrace = {
+            x: OTUvalues,
+            y: OTUids.map(object => 'OTU ' + object),
+            name: labels,
+            type: 'bar',
+            orientation: 'h'
+        };
+        let barLayout = {
+            title: `Top 10 OTUs for Subject ${id}`,
+            xaxis: { title: 'Sample Values' },
+            yaxis: { title: 'OTU ID' }
+        };
+        let barData = [barTrace];
+        Plotly.newPlot('bar', barData, barLayout);
+        
+    })
+};
 
-// Create an array of samples data
-let samples = Object.values(data.samples_values);
-let labels = Object.values(data.otu_ids);
+// Demographic Info
+function demoInfo(id) {
+    d3.json(url).then(function (data) {
+        let sampleData = data;
+        let metadata = sampleData.metadata;
+        let identifier = metadata.filter(sample =>
+            sample.id.toString() === id)[0];
+        let panel = d3.select('#sample-metadata');
+        panel.html('');
+        Object.entries(identifier).forEach(([key, value]) => {
+            panel.append('h6').text(`${key}: ${value}`);
+        })
+    })
+};
 
 
-// Display the horizontal plot
-let data = [{
-    type: "bar",  
-    values: samples,
-    labels: labels,
-    orientation : 'h'
-}];
-  
+//Build new upon ID change
+function userSelection(id) {
+    charts(id);
+    demoInfo(id);
+};
 
-Plotly.newPlot("bar", data)
+//Test Subject Dropdown and initial function
+function dropdownChange() {
+    let dropDown = d3.select('#selDataset');
+    let id = dropDown.property('value');
+    d3.json(url).then(function (data) {
+        sampleData = data;
+        let names = sampleData.names;
+        let samples = sampleData.samples;
+        Object.values(names).forEach(value => {
+            dropDown.append('option').text(value);
+        })
+        demoInfo(names[0]);
+        charts(names[0])
+    })
+};
+
+dropdownChange();
+
