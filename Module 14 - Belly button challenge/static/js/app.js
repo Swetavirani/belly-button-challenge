@@ -35,7 +35,8 @@ function charts(id) {
             y: OTUids.map(object => 'OTU ' + object),
             name: labels,
             type: 'bar',
-            orientation: 'h'
+            orientation: 'h',
+            text : filtered.otu_labels
         };
         let barLayout = {
             title: `Top 10 OTUs for Subject ${id}`,
