@@ -1,6 +1,6 @@
 # belly-button-challenge
 
-Module 14 - Interactive Visualizations Challenge - https://swetavirani.github.io/belly-button-challenge/
+Module 14 - Interactive Visualizations Challenge - 
 
 Instructions
 
